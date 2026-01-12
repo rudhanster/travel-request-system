@@ -1,4 +1,4 @@
-// Configuration file for Travel Request System - MIT Manipal
+ // Configuration file for Travel Request System - MIT Manipal
 // IMPORTANT: Fill in the values marked with YOUR_XXX_HERE
 
 const CONFIG = {
@@ -13,7 +13,7 @@ const CONFIG = {
         
         // Directory (tenant) ID - looks like: 87654321-4321-4321-4321-cba987654321
         // Format: https://login.microsoftonline.com/YOUR_TENANT_ID
-        authority: 'https://login.microsoftonline.com/b528bfe7-6f84-447e-aa6c-8ca39e485594',
+         authority: 'https://login.microsoftonline.com/common,
         
         // Your application URL - ALREADY FILLED FOR YOU!
         redirectUri: 'https://rudhanster.github.io/travel-request-system/travel-request-app.html'
