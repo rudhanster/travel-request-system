@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Request System - MIT Manipal</title>
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .nav-tab:hover {
+            background: #e0e0e0;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        label .required {
+            color: red;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="tel"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+        }
+
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-declined {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .checkbox-group {
+            margin: 10px 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .login-container {
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .login-container h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+
+        .file-upload {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .filter-section {
+                flex-direction: column;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Travel Request System</h1>
+            <p>MIT, Manipal</p>
+            <div class="user-info" id="userInfo"></div>
+        </div>
+
+        <div id="loginSection" class="login-container">
+            <h2>Welcome to Travel Request System</h2>
+            <p style="margin-bottom: 30px;">Please sign in with your institutional Microsoft 365 account</p>
+            <button class="btn btn-primary" onclick="signIn()">
+                Sign in with Microsoft
+            </button>
+        </div>
+
+        <div id="appContent" style="display: none;">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('submit')">
+                    Submit Request
+                </button>
+                <button class="nav-tab admin-only" onclick="switchTab('pending')">
+                    Pending Requests
+                </button>
+                <button class="nav-tab admin-only" onclick="switchTab('processed')">
+                    Processed Requests
+                </button>
+            </div>
+
+            <!-- Submit Request Tab -->
+            <div id="submitTab" class="tab-content active">
+                <h2>Travel Request Form</h2>
+                <p style="color: #666; margin-bottom: 20px;">Please fill in the correct details</p>
+                <div id="submitAlert"></div>
+                
+                <form id="travelRequestForm">
+                    <div class="form-group">
+                        <label>1. Requested By <span class="required">*</span></label>
+                        <input type="text" id="requestedBy" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>2. Department/School Name <span class="required">*</span></label>
+                        <input type="text" id="department" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>3. Travel arrangement is for MIT Employee or a Visitor <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="travelType" value="MIT Employee" required>
+                                MIT Employee
+                            </label>
+                            <label>
+                                <input type="radio" name="travelType" value="Visitor/Guest">
+                                Visitor/Guest
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>4. Employee ID <span class="required">*</span></label>
+                        <input type="text" id="employeeId" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>5. Traveller Name <span class="required">*</span></label>
+                        <input type="text" id="travellerName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>6. Traveller Address <span class="required">*</span></label>
+                        <textarea id="travellerAddress" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>7. Guest/Traveller Contact Number <span class="required">*</span></label>
+                        <input type="tel" id="contactNumber" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>8. Date of Travel <span class="required">*</span></label>
+                        <input type="date" id="travelDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>9. From Location / Pick Up Location <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="fromLocation" value="Airport" required>
+                                Airport
+                            </label>
+                            <label>
+                                <input type="radio" name="fromLocation" value="Railway Station">
+                                Railway Station
+                            </label>
+                            <label>
+                                <input type="radio" name="fromLocation" value="Others">
+                                Others
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>10. From address or Pick Up Address <span class="required">*</span></label>
+                        <textarea id="fromAddress" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>11. To Location <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="toLocation" value="Airport" required>
+                                Airport
+                            </label>
+                            <label>
+                                <input type="radio" name="toLocation" value="Railway Station">
+                                Railway Station
+                            </label>
+                            <label>
+                                <input type="radio" name="toLocation" value="Others">
+                                Others
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>12. To Address or Drop Address <span class="required">*</span></label>
+                        <textarea id="toAddress" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>13. Upload Ticket (Air / Train ticket)</label>
+                        <div class="file-upload" onclick="document.getElementById('ticketFile').click()">
+                            <input type="file" id="ticketFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            <p>📎 Click to upload file</p>
+                            <small>Allowed: Word, Excel, PPT, PDF, Image, Video, Audio (Max 10MB)</small>
+                            <p id="fileName" style="margin-top: 10px; color: #667eea; font-weight: 600;"></p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>14. Pick Up Time in 24 hour format <span class="required">*</span></label>
+                        <input type="time" id="pickupTime" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </form>
+            </div>
+
+            <!-- Pending Requests Tab (Admin Only) -->
+            <div id="pendingTab" class="tab-content">
+                <h2>Pending Travel Requests</h2>
+                <div id="pendingAlert"></div>
+                
+                <div class="filter-section">
+                    <div class="form-group" style="margin: 0; flex: 1;">
+                        <label>Filter by Date</label>
+                        <input type="date" id="filterDate" onchange="loadPendingRequests()">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-secondary" onclick="clearFilter()">Clear Filter</button>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="sendToTransport()" id="sendBtn">
+                        📧 Send Selected to Transport
+                    </button>
+                    <button class="btn btn-secondary" onclick="toggleSelectAll()">
+                        Select All / None
+                    </button>
+                </div>
+
+                <div id="pendingTableContainer" class="table-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading requests...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Processed Requests Tab (Admin Only) -->
+            <div id="processedTab" class="tab-content">
+                <h2>Processed Travel Requests</h2>
+                <div id="processedAlert"></div>
+                
+                <div class="filter-section">
+                    <div class="form-group" style="margin: 0; flex: 1;">
+                        <label>Filter by Date Range</label>
+                        <input type="date" id="processedFromDate" onchange="loadProcessedRequests()">
+                    </div>
+                    <div class="form-group" style="margin: 0; flex: 1;">
+                        <label>&nbsp;</label>
+                        <input type="date" id="processedToDate" onchange="loadProcessedRequests()">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label>Status</label>
+                        <select id="statusFilter" onchange="loadProcessedRequests()">
+                            <option value="">All</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Declined">Declined</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="processedTableContainer" class="table-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading requests...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
