@@ -13,7 +13,7 @@ const CONFIG = {
         
         // Directory (tenant) ID - looks like: 87654321-4321-4321-4321-cba987654321
         // Format: https://login.microsoftonline.com/YOUR_TENANT_ID
-         authority: 'https://login.microsoftonline.com/common,
+         authority: 'https://login.microsoftonline.com/common',
         
         // Your application URL - ALREADY FILLED FOR YOU!
         redirectUri: 'https://rudhanster.github.io/travel-request-system/travel-request-app.html'
